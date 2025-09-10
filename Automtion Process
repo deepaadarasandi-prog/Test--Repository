@@ -1,0 +1,35 @@
+# Snipe-IT Automation Script
+
+This automation script uses **.NET 8** and **Microsoft.Playwright** to interact with the Snipe-IT demo site.
+
+##  Steps Automated
+
+- Logs into [https://demo.snipeitapp.com](https://demo.snipeitapp.com)
+- Creates a "Macbook Pro 13" asset
+- Sets the status to **"Ready to Deploy"**
+- Checks it out to a random user
+- Verifies the asset is listed
+- Confirms asset details
+- Verifies asset creation and checkout in the history tab
+
+##  Tech Stack
+
+- .NET 8
+- Playwright for .NET
+
+##  How to Run
+
+1. Clone the repo:
+
+```bash
+git clone https://github.com/your-username/snipeit-automation.git
+cd snipeit-automation
+2.Install dependencies:
+dotnet restore
+3.Install Playwright browsers:
+playwright install
+4.Run the test:
+dotnet test
+
+
+
