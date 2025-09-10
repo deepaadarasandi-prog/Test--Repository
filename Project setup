@@ -1,0 +1,12 @@
+🔧 Project Setup
+1. 📁 Folder Structure:
+SnipeITAutomation/
+├── Tests/
+│   └── AssetTests.cs
+├── Pages/
+│   ├── LoginPage.cs
+│   ├── DashboardPage.cs
+│   ├── AssetPage.cs
+│   └── Utils.cs
+├── SnipeITAutomation.csproj
+└── README.md
