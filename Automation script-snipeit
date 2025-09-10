@@ -1,0 +1,82 @@
+using Microsoft.Playwright;
+using NUnit.Framework;
+using System.Threading.Tasks;
+
+namespace SnipeITAutomation.Tests
+{
+    public class AssetTests
+    {
+        private IPlaywright _playwright;
+        private IBrowser _browser;
+        private IPage _page;
+
+        private const string BaseUrl = "https://demo.snipeitapp.com";
+        private string assetName;
+
+        [SetUp]
+        public async Task Setup()
+        {
+            _playwright = await Playwright.CreateAsync();
+            _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = false });
+            var context = await _browser.NewContextAsync();
+            _page = await context.NewPageAsync();
+        }
+
+        [Test]
+        public async Task CreateAndVerifyMacbookProAsset()
+        {
+            // Step 1: Login
+            await _page.GotoAsync($"{BaseUrl}/login");
+            await _page.FillAsync("input[name='email']", "admin@admin.com");
+            await _page.FillAsync("input[name='password']", "password");
+            await _page.ClickAsync("button[type='submit']");
+            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            // Step 2: Create Asset
+            await _page.GotoAsync($"{BaseUrl}/hardware/create");
+            assetName = $"Macbook Pro 13 - {Utils.GenerateRandomString(5)}";
+
+            await _page.FillAsync("#name", assetName);
+            await _page.SelectOptionAsync("#status_id", new SelectOptionValue { Label = "Ready to Deploy" });
+            await _page.SelectOptionAsync("#model_id", "1"); // Pick first available model
+            await _page.SelectOptionAsync("#company_id", "1");
+            await _page.FillAsync("#serial", Utils.GenerateRandomString(10));
+            await _page.SelectOptionAsync("#location_id", "1");
+
+            // Checkout to random user
+            await _page.SelectOptionAsync("#assigned_to", new SelectOptionValue { Index = 1 });
+
+            await _page.ClickAsync("button[type='submit']");
+            await _page.WaitForURLAsync($"{BaseUrl}/hardware");
+
+            // Step 3: Find in List
+            await _page.GotoAsync($"{BaseUrl}/hardware");
+            await _page.FillAsync("input[type='search']", assetName);
+            await _page.WaitForSelectorAsync($"text={assetName}");
+
+            // Step 4: Navigate to Asset Page
+            await _page.ClickAsync($"a:has-text('{assetName}')");
+            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            // Step 5: Validate Details
+            var assetHeader = await _page.InnerTextAsync("h2");
+            Assert.IsTrue(assetHeader.Contains(assetName));
+
+            var statusText = await _page.InnerTextAsync(".status-label");
+            Assert.IsTrue(statusText.Contains("Ready to Deploy"));
+
+            // Step 6: History Tab
+            await _page.ClickAsync("a[href*='/history']");
+            var historyText = await _page.InnerTextAsync(".timeline");
+            Assert.IsTrue(historyText.Contains("created this asset"));
+            Assert.IsTrue(historyText.Contains("checked out"));
+        }
+
+        [TearDown]
+        public async Task Cleanup()
+        {
+            await _browser.CloseAsync();
+            _playwright.Dispose();
+        }
+    }
+}
